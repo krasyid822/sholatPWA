@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function(){
       var title = `Waktu Sholat ${prayerName.charAt(0).toUpperCase() + prayerName.slice(1)} Telah Tiba`;
       var options = {
         body: `Waktu: ${prayerTime.toLocaleTimeString()}`,
-        icon: "icons/icon-192.png"
+        icon: "favicon.png"
       };
       new Notification(title, options);
     }
