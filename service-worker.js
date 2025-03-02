@@ -1,12 +1,6 @@
 const cacheName = 'jadwal-sholat-v1';
 const assets = [
-  './',
-  './index.html',
-  './manifest.json',
-  './PrayTimes.js',
-  './script.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './'
 ];
 
 self.addEventListener('install', event => {
