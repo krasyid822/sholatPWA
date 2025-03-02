@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function(){
   // Inisialisasi kalibrasi (offset dalam menit) dengan default 0
   var calibrationOffsets = {
-    fajr: 0,
-    sunrise: 0,
-    dhuhr: 0,
-    asr: 0,
-    maghrib: 0,
-    isha: 0
+    fajr: -6,
+    sunrise: -3,
+    dhuhr: 4,
+    asr: 2,
+    maghrib: 3,
+    isha: 7
   };
 
   // Jika ada data kalibrasi tersimpan di localStorage, gunakan itu
@@ -168,12 +168,12 @@ document.addEventListener("DOMContentLoaded", function(){
     e.preventDefault();
     var formData = new FormData(e.target);
     calibrationOffsets = {
-      fajr: parseFloat(formData.get("fajr")) || 0,
-      sunrise: parseFloat(formData.get("sunrise")) || 0,
-      dhuhr: parseFloat(formData.get("dhuhr")) || 0,
-      asr: parseFloat(formData.get("asr")) || 0,
-      maghrib: parseFloat(formData.get("maghrib")) || 0,
-      isha: parseFloat(formData.get("isha")) || 0
+      fajr: parseFloat(formData.get("fajr")) || -6,
+      sunrise: parseFloat(formData.get("sunrise")) || -3,
+      dhuhr: parseFloat(formData.get("dhuhr")) || 4,
+      asr: parseFloat(formData.get("asr")) || 2,
+      maghrib: parseFloat(formData.get("maghrib")) || 3,
+      isha: parseFloat(formData.get("isha")) || 7
     };
     localStorage.setItem("calibrationOffsets", JSON.stringify(calibrationOffsets));
     calibMenu.style.display = "none";
@@ -252,4 +252,12 @@ document.addEventListener("DOMContentLoaded", function(){
     window.currentLokasiText = "Jakarta (Default)";
     tampilkanJadwal(lat, lng, "Jakarta (Default)");
   }
+});
+
+// Handler untuk menu notifikasi
+var btnNotif = document.getElementById("btn-notification-settings");
+var notifMenu = document.getElementById("notification-settings");
+btnNotif.addEventListener("click", function(){
+  notifMenu.style.display =
+    (notifMenu.style.display === "none" || notifMenu.style.display === "") ? "block" : "none";
 });
