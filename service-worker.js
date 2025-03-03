@@ -1,7 +1,8 @@
-const cacheName = 'jadwal-sholat-v1';
+const cacheName = 'jadwal-sholat-v2';
 const assets = [
   './adzan_subuh',
   './adzan1',
+  './beeps',
   './favicon.png',
   './PrayTimes.js'
 ];

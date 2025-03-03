@@ -1,12 +1,25 @@
 document.addEventListener("DOMContentLoaded", function(){
-  // Inisialisasi kalibrasi (offset dalam menit) dengan default 0
+  // Inisialisasi PrayTimes
+  var prayerNames = {
+    imsak: "Imsak",
+    fajr: "Subuh",
+    sunrise: "Terbit",
+    dhuhr: "Zuhur",
+    asr: "Ashar",
+    maghrib: "Maghrib",
+    isha: "Isya"
+  };
+
+  // Inisialisasi kalibrasi (offset dalam menit) dengan default
   var calibrationOffsets = {
-    fajr: -6,
+    imsak: -5,  // nilai default imsak
+    fajr: -5,
     sunrise: -3,
     dhuhr: 4,
     asr: 2,
     maghrib: 3,
-    isha: 7
+    isha: 6,
+    hijriDate: -2
   };
 
   // Jika ada data kalibrasi tersimpan di localStorage, gunakan itu
@@ -17,8 +30,11 @@ document.addEventListener("DOMContentLoaded", function(){
     });
   }
 
+  // **Assign ke global**
+  window.calibrationOffsets = calibrationOffsets;
+
   // Cek dan ambil pilihan audio yang tersimpan (default: "audio/adzan1.mp3")
-  var savedAudio = localStorage.getItem("selectedAudio") || "audio/adzan1.mp3";
+  var savedAudio = localStorage.getItem("selectedAudio") || "adzan1";
   var audioSelectElem = document.getElementById("audio-select");
   audioSelectElem.value = savedAudio;
   // Update link download audio
@@ -47,25 +63,59 @@ document.addEventListener("DOMContentLoaded", function(){
     // Tampilkan jadwal sholat
     var jadwalDiv = document.getElementById('jadwal');
     jadwalDiv.innerHTML = "";
-    var prayers = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
+
+    // Tambahkan "imsak" ke daftar waktu
+    var prayers = ["imsak", "fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
+
+    // Menampilkan jadwal sholat dengan label lokal
     prayers.forEach(function(prayer){
       var p = document.createElement('div');
       p.className = 'prayer-time';
-      p.innerHTML = `<strong>${prayer.charAt(0).toUpperCase() + prayer.slice(1)}:</strong> ${times[prayer]}`;
+      p.innerHTML = `<strong>${prayerNames[prayer]}:</strong> ${times[prayer]}`;
       jadwalDiv.appendChild(p);
     });
 
-    // Mulai countdown dan jadwalkan notifikasi otomatis
-    startCountdown(times);
-    scheduleNotification(times);
-  }
+    // Fungsi untuk menambahkan nol di depan angka
+    function pad(num) {
+      return ("0" + num).slice(-2);
+    }
 
-  // Fungsi reverse geocoding menggunakan API Nominatim
-  function reverseGeocode(lat, lng) {
-    var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
-    return fetch(url, { headers: { 'Accept': 'application/json' } })
-           .then(response => response.json());
-  }
+    // Fungsi untuk mengupdate tampilan countdown setiap detik
+    function startCountdown(times) {
+      var countdownElem = document.getElementById("countdown");
+      setInterval(function(){
+        var next = getNextPrayer(times);
+        var nextPrayerName = next.name;
+        var nextPrayerTime = next.time;
+        var now = new Date();
+        var diff = nextPrayerTime - now;
+        if(diff < 0) diff = 0;
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        countdownElem.innerHTML =
+          `<strong>Hitung Mundur:</strong> ${prayerNames[nextPrayerName]} dalam ${pad(hours)}:${pad(minutes)}:${pad(seconds)} lagi`;
+      }, 1000);
+    }
+    // Fungsi untuk menjadwalkan notifikasi otomatis saat waktu sholat tiba
+    function scheduleNotification(times) {
+      var next = getNextPrayer(times);
+      var nextPrayerName = next.name;
+      var nextPrayerTime = next.time;
+      var diff = nextPrayerTime - new Date();
+      if(diff > 0) {
+        setTimeout(function(){
+          triggerNotification(nextPrayerName, nextPrayerTime);
+          playAdzanAudio();
+          scheduleNotification(times); // menjadwalkan notifikasi berikutnya
+        }, diff);
+      }
+    }
+
+      // Mulai countdown dan jadwalkan notifikasi otomatis
+      startCountdown(times);
+      scheduleNotification(times);
+    }
 
   // Fungsi konversi waktu string (misal "05:30") menjadi objek Date hari ini
   function parseTime(timeStr) {
@@ -74,10 +124,12 @@ document.addEventListener("DOMContentLoaded", function(){
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]), 0);
   }
 
+
   // Fungsi untuk mendapatkan sholat berikutnya
   function getNextPrayer(times) {
     var now = new Date();
-    var prayers = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
+    // Sertakan "imsak" di sini, sehingga jika waktu sekarang sebelum imsak, maka imsak akan menjadi target berikutnya.
+    var prayers = ["imsak", "fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
     var nextPrayer = null;
     var nextPrayerTime = null;
     for (var i = 0; i < prayers.length; i++) {
@@ -90,71 +142,11 @@ document.addEventListener("DOMContentLoaded", function(){
       }
     }
     if (!nextPrayer) {
-      nextPrayer = "fajr";
-      nextPrayerTime = parseTime(times["fajr"]);
+      nextPrayer = "imsak";
+      nextPrayerTime = parseTime(times["imsak"]);
       nextPrayerTime.setDate(nextPrayerTime.getDate() + 1);
     }
     return { name: nextPrayer, time: nextPrayerTime };
-  }
-
-  // Fungsi format angka dua digit
-  function pad(num) {
-    return ("0" + num).slice(-2);
-  }
-
-  // Fungsi untuk mengupdate tampilan countdown setiap detik
-  function startCountdown(times) {
-    var countdownElem = document.getElementById("countdown");
-    setInterval(function(){
-      var next = getNextPrayer(times);
-      var nextPrayerName = next.name;
-      var nextPrayerTime = next.time;
-      var now = new Date();
-      var diff = nextPrayerTime - now;
-      if(diff < 0) diff = 0;
-      var hours = Math.floor(diff / (1000 * 60 * 60));
-      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      countdownElem.innerHTML =
-        `<strong>Countdown:</strong> ${nextPrayerName.charAt(0).toUpperCase() + nextPrayerName.slice(1)} in ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    }, 1000);
-  }
-
-  // Fungsi untuk menjadwalkan notifikasi otomatis saat waktu sholat tiba
-  function scheduleNotification(times) {
-    var next = getNextPrayer(times);
-    var nextPrayerName = next.name;
-    var nextPrayerTime = next.time;
-    var diff = nextPrayerTime - new Date();
-    if(diff > 0) {
-      setTimeout(function(){
-         triggerNotification(nextPrayerName, nextPrayerTime);
-         playAdzanAudio();
-         scheduleNotification(times);
-      }, diff);
-    }
-  }
-
-  // Fungsi untuk menampilkan notifikasi
-  function triggerNotification(prayerName, prayerTime) {
-    if(localStorage.getItem("notificationsEnabled") === "true" && Notification.permission === "granted") {
-      var title = `Waktu Sholat ${prayerName.charAt(0).toUpperCase() + prayerName.slice(1)} Telah Tiba`;
-      var options = {
-        body: `Waktu: ${prayerTime.toLocaleTimeString()}`,
-        icon: "favicon.png"
-      };
-      new Notification(title, options);
-    }
-  }
-
-  // Fungsi untuk memutar audio adzan sesuai pilihan user
-  function playAdzanAudio() {
-    var audioSelect = document.getElementById("audio-select");
-    var audioSrc = audioSelect.value;
-    var audio = new Audio(audioSrc);
-    audio.play().catch(function(error){
-      console.error("Gagal memutar audio:", error);
-    });
   }
 
   // Handler untuk menu kalibrasi
@@ -168,12 +160,13 @@ document.addEventListener("DOMContentLoaded", function(){
     e.preventDefault();
     var formData = new FormData(e.target);
     calibrationOffsets = {
-      fajr: parseFloat(formData.get("fajr")) || -6,
+      imsak: parseFloat(formData.get("imsak")) || -5,
+      fajr: parseFloat(formData.get("fajr")) || -5,
       sunrise: parseFloat(formData.get("sunrise")) || -3,
       dhuhr: parseFloat(formData.get("dhuhr")) || 4,
       asr: parseFloat(formData.get("asr")) || 2,
       maghrib: parseFloat(formData.get("maghrib")) || 3,
-      isha: parseFloat(formData.get("isha")) || 7
+      isha: parseFloat(formData.get("isha")) || 6
     };
     localStorage.setItem("calibrationOffsets", JSON.stringify(calibrationOffsets));
     calibMenu.style.display = "none";
@@ -205,6 +198,29 @@ document.addEventListener("DOMContentLoaded", function(){
     }
   });
 
+  // Fungsi untuk menampilkan notifikasi
+  function triggerNotification(prayerName, prayerTime) {
+    if(localStorage.getItem("notificationsEnabled") === "true" && Notification.permission === "granted") {
+      var title = `Waktu Sholat ${prayerNames[prayerName]} Telah Tiba`;
+      var options = {
+        body: `Waktu: ${prayerTime.toLocaleTimeString()}`,
+        icon: "favicon.png"
+      };
+      new Notification(title, options);
+    }
+  }
+
+  // Fungsi untuk memutar audio adzan sesuai pilihan user
+  function playAdzanAudio() {
+    var audioSelect = document.getElementById("audio-select");
+    var audioSrc = audioSelect.value;
+    var audio = new Audio(audioSrc);
+    audio.play().catch(function(error){
+      console.error("Gagal memutar audio:", error);
+    });
+  }
+
+
   // Tombol uji notifikasi yang mengacu ke waktu sholat berikutnya
   document.getElementById("btn-test-notification").addEventListener("click", function() {
     var times = prayTimes.getTimes(new Date(), [window.currentLat || -6.200000, window.currentLng || 106.816666], 7);
@@ -212,6 +228,14 @@ document.addEventListener("DOMContentLoaded", function(){
     triggerNotification(next.name, next.time);
     playAdzanAudio();
   });
+
+  // Fungsi untuk melakukan reverse geocoding menggunakan API Nominatim
+  function reverseGeocode(lat, lng) {
+    var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+    return fetch(url, { headers: { 'Accept': 'application/json' } })
+          .then(response => response.json());
+  }
+
 
   // Cek Geolocation
   if (navigator.geolocation) {
@@ -252,12 +276,23 @@ document.addEventListener("DOMContentLoaded", function(){
     window.currentLokasiText = "Jakarta (Default)";
     tampilkanJadwal(lat, lng, "Jakarta (Default)");
   }
-});
 
-// Handler untuk menu notifikasi
-var btnNotif = document.getElementById("btn-notification-settings");
-var notifMenu = document.getElementById("notification-settings");
-btnNotif.addEventListener("click", function(){
-  notifMenu.style.display =
-    (notifMenu.style.display === "none" || notifMenu.style.display === "") ? "block" : "none";
+  // Handler untuk menu notifikasi
+  var btnNotif = document.getElementById("btn-notification-settings");
+  var notifMenu = document.getElementById("notification-settings");
+  btnNotif.addEventListener("click", function(){
+    notifMenu.style.display =
+      (notifMenu.style.display === "none" || notifMenu.style.display === "") ? "block" : "none";
+  });
+
+  // Handler untuk menu feedback
+  var btnFed = document.getElementById("btn-feedback");
+  var fedMenu = document.getElementById("usr-feedback");
+  btnFed.addEventListener("click", function(){
+    fedMenu.style.display =
+      (fedMenu.style.display === "none" || fedMenu.style.display === "") ? "block" : "none";
+  });
+
+  
+  // Jangan diluar dari event listener DOMContentLoaded
 });
