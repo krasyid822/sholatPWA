@@ -3,23 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jadwal Sholat Bulan Ini</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 20px;
-      background: #f7f7f7;
-    }
-  </style>
+  <title>Preview Jadwal Sholat</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Container untuk menampilkan preview jadwal -->
-  <div id="preview-container">
-    <div id="preview-jadwal"></div>
+  <div class="container">
+    <h1 id="preview-heading">Preview Jadwal Sholat</h1>
+    <div class="info" id="location-info">Mendapatkan informasi lokasi...</div>
+
+    <button id="btn-hijri-calibration" class="btn">Kalibrasi Hijriah</button>
+    <a href="index.html" class="btn">Kembali ke Halaman Utama</a>
+    
+    <div id="hijri-calibration-menu" style="display: none;">
+        <h2>Kalibrasi Tanggal Hijriah</h2>
+        <label for="hijri-calibration-input">Offset Hari: </label>
+        <input type="number" id="hijri-calibration-input">
+        <button id="apply-hijri-calibration" class="submit">Terapkan</button>
+    </div>
+
+    <div id="preview-container">
+      <div class="table-controls">
+        <div class="control-item">
+          <input type="checkbox" id="toggle-past-days" style="vertical-align: middle;">
+          <label for="toggle-past-days">Sembunyikan hari lalu</label>
+        </div>
+      </div>
+      <div id="preview-jadwal"></div>
+    </div>
   </div>
   
-  <!-- Sertakan library dan script -->
   <script src="PrayTimes.js"></script>
+  <script src="config.js"></script>
   <script src="previewHijri.js"></script>
 </body>
 </html>

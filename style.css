@@ -1,0 +1,145 @@
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 20px 0;
+  background: #f7f7f7;
+}
+
+h1, h2 { 
+  text-align: center; 
+}
+
+.info {
+  background: #e0e0e0;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px auto;
+  width: fit-content;
+  text-align: center;
+}
+
+.prayer-time {
+  padding: 10px;
+  margin: 10px 0;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#calibration-menu, #notification-menu, #hijri-calibration-menu, #feedback-menu {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin: 15px auto;
+  max-width: 300px;
+}
+
+#calibration-menu label, #notification-menu label, #hijri-calibration-menu label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+#calibration-menu input, #hijri-calibration-menu input {
+  width: 100%;
+  padding: 5px;
+  margin-top: 3px;
+  box-sizing: border-box;
+}
+
+.btn {
+  display: block;
+  margin: 10px auto; /* Aturan default untuk semua tombol agar berada di tengah */
+  padding: 8px 16px;
+  background: #3f51b5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  width: fit-content;
+}
+
+.submit {
+  display: block;
+  margin: 10px auto;
+  padding: 8px 16px;
+  background: #3fb557;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#notification-menu input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+#btn-test-notification, #btn-download-audio {
+  background-color: #009688;
+}
+
+.usr-feedback {
+  text-align: center;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  color: rgb(0, 0, 0);
+  background: none;
+  border: none;
+}
+
+/* Gaya untuk kontrol di atas tabel preview */
+.table-controls {
+    display: flex;
+    justify-content: flex-end; /* Meletakkan checkbox di kanan atas tabel */
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.control-item {
+    display: flex;
+    align-items: center;
+}
+
+.table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.preview-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.preview-table th, .preview-table td {
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.preview-table th:first-child, .preview-table td:first-child {
+    border-left: none;
+}
+
+.preview-table th {
+    background-color: #f2f2f2;
+}
+
+.preview-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
